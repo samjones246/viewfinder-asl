@@ -6,13 +6,13 @@ startup {
     vars.Helper.LoadSceneManager = true;
 
     settings.Add("split_exit", true, "Split on level end");
-        settings.Add("split_exit_11", true, "Level 1", "split_exit");
-        settings.Add("split_exit_7", true, "Level 2", "split_exit");
-        settings.Add("split_exit_12", true, "Level 3", "split_exit");
-        settings.Add("split_exit_8", true, "Level 4", "split_exit");
-        settings.Add("split_exit_5", true, "Level 5", "split_exit");
-        settings.Add("split_exit_9", true, "Level 6", "split_exit");
-        settings.Add("split_exit_10", true, "Level 7", "split_exit");
+    settings.Add("split_exit_11", true, "Level 1", "split_exit");
+    settings.Add("split_exit_7", true, "Level 2", "split_exit");
+    settings.Add("split_exit_12", true, "Level 3", "split_exit");
+    settings.Add("split_exit_8", true, "Level 4", "split_exit");
+    settings.Add("split_exit_5", true, "Level 5", "split_exit");
+    settings.Add("split_exit_9", true, "Level 6", "split_exit");
+    settings.Add("split_exit_10", true, "Level 7", "split_exit");
 
     vars.splitsDone = new HashSet<string>();
 }
@@ -34,6 +34,14 @@ init
             mono["ViewfinderAssembly", "DemoEndScreenController", 1]
             .Make<bool>("_instance", 0x20, 0x30, 0x39);
 
+        vars.Helper["transitionInterpolator"] =
+            mono["ViewfinderAssembly", "TransitionImageEffect", 1]
+            .Make<float>("_instance", 0x88);
+
+        vars.Helper["transitionState"] =
+            mono["ViewfinderAssembly", "TransitionImageEffect", 1]
+            .Make<int>("_instance", 0x90);
+
         return true;
     });
 }
@@ -52,12 +60,13 @@ split {
         return true;
     }
 
-    if (current.sceneIndex != old.sceneIndex) {
+    if (current.sceneIndex != old.sceneIndex && current.sceneIndex != 1) {
         string splitName = "split_exit_" + old.sceneIndex;
         return settings[splitName] && vars.splitsDone.Add(splitName);
     }
 }
 
 isLoading {
-    return current.loadState != 0;
+    return current.transitionState == 2 || 
+        (current.transitionState == 3 && current.transitionInterpolator == 0f);
 }
