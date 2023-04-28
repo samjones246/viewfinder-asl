@@ -39,13 +39,23 @@ start
     return current.sceneIndex == 11 && current.loadState == 0 && old.loadState == 4;
 }
 
+onStart
+{
+    vars.splitsDone = new List<string>();
+}
+
 split
 {
     if (current.demoComplete && !old.demoComplete) {
         return true;
     }
     if (current.sceneIndex != old.sceneIndex) {
-        return settings["split_exit_"+old.sceneIndex];
+        string splitName = "split_exit_"+old.sceneIndex; 
+        if (!vars.splitsDone.Contains(splitName)) {
+            vars.splitsDone.Add(splitName);
+            vars.Log(vars.splitsDone);
+            return settings[splitName];
+        }
     }
 }
 
