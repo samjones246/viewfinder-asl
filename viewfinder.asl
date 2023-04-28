@@ -49,6 +49,9 @@ init
 update {
     int _sceneIndex = vars.Helper.Scenes.Active.Index;
     current.sceneIndex = _sceneIndex == 0 ? old.sceneIndex : _sceneIndex;
+    if (current.transitionInterpolator != old.transitionInterpolator) {
+        print("f: " + current.transitionInterpolator);
+    }
 }
 
 start {
@@ -67,6 +70,11 @@ split {
 }
 
 isLoading {
-    return current.transitionState == 2 || 
-        (current.transitionState == 3 && current.transitionInterpolator == 0f);
+    if (current.transitionState == 2) {
+        return true;
+    }
+    if (current.transitionState == 3) {
+        return current.transitionInterpolator != 1f &&
+            current.transitionInterpolator == old.transitionInterpolator;
+    }
 }
