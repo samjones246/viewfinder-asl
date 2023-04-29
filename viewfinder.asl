@@ -7,13 +7,13 @@ startup {
     vars.Helper.StartFileLogger("ViewfinderASL.log");
 
     settings.Add("split_exit", true, "Split on level end");
-    settings.Add("split_exit_11", true, "Level 1", "split_exit");
-    settings.Add("split_exit_7", true, "Level 2", "split_exit");
-    settings.Add("split_exit_12", true, "Level 3", "split_exit");
-    settings.Add("split_exit_8", true, "Level 4", "split_exit");
-    settings.Add("split_exit_5", true, "Level 5", "split_exit");
-    settings.Add("split_exit_9", true, "Level 6", "split_exit");
-    settings.Add("split_exit_10", true, "Level 7", "split_exit");
+    settings.Add("1:1.1", true, "Level 1", "split_exit");
+    settings.Add("1:1.2", true, "Level 2", "split_exit");
+    settings.Add("1:1.3", true, "Level 3", "split_exit");
+    settings.Add("1:2.1", true, "Level 4", "split_exit");
+    settings.Add("1:2.3", true, "Level 5", "split_exit");
+    settings.Add("1:2.4", true, "Level 6", "split_exit");
+    settings.Add("3:2.1", true, "Level 7", "split_exit");
 
     vars.splitsDone = new HashSet<string>();
 }
@@ -44,6 +44,11 @@ init
             mono["ViewfinderAssembly", "TransitionImageEffect", 1]
             .Make<int>("_instance", 0x90);
 
+        // PersistentGameController._instance.currentLevel.LevelID
+        vars.Helper["Level"] = 
+            mono["ViewfinderAssembly", "PersistentGameController", 1]
+            .MakeString("_instance", 0x18, 0x80);
+
         return true;
     });
 }
@@ -59,17 +64,17 @@ start {
 
 split {
     if (current.demoComplete && !old.demoComplete) {
+        vars.Log("Split point: Demo Complete");
         return true;
     }
 
-    if (current.sceneIndex != old.sceneIndex && current.sceneIndex != 1) {
-        string splitName = "split_exit_" + old.sceneIndex;
-        vars.Log("Split Point: " + splitName);
-        vars.Log("- current.sceneIndex: " + current.sceneIndex);
-        vars.Log("- old.sceneIndex: " + old.sceneIndex);
-        vars.Log("- in splitsDone? " + vars.splitsDone.Contains(splitName));
-        vars.Log("- setting enabled? " + settings[splitName]);
-        if (settings[splitName] && vars.splitsDone.Add(splitName)) {
+    if (current.Level != old.Level) {
+        vars.Log("Split Point: " + old.Level);
+        vars.Log("- current.Level: " + current.Level);
+        vars.Log("- old.Level: " + old.Level);
+        vars.Log("- in splitsDone? " + vars.splitsDone.Contains(current.Level));
+        vars.Log("- setting enabled? " + settings[old.Level]);
+        if (settings[old.Level] && vars.splitsDone.Add(old.Level)) {
             vars.Log("- Split point enabled and not yet triggered, firing.");
             return true;
         } else {
