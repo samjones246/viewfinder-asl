@@ -54,7 +54,7 @@ init
 }
 
 start {
-    return current.sceneIndex == 11 && current.loadState == 0 && old.loadState == 4;
+    return current.Level == "1:1.1" && current.loadState == 0 && old.loadState == 4;
 }
 
 split {
