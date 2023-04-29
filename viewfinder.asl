@@ -53,11 +53,6 @@ init
     });
 }
 
-update {
-    int _sceneIndex = vars.Helper.Scenes.Active.Index;
-    current.sceneIndex = _sceneIndex == 0 ? old.sceneIndex : _sceneIndex;
-}
-
 start {
     return current.sceneIndex == 11 && current.loadState == 0 && old.loadState == 4;
 }
