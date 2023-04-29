@@ -4,6 +4,7 @@ startup {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Viewfinder Demo";
     vars.Helper.LoadSceneManager = true;
+    vars.Helper.StartFileLogger("ViewfinderASL.log");
 
     settings.Add("split_exit", true, "Split on level end");
     settings.Add("split_exit_11", true, "Level 1", "split_exit");
@@ -19,6 +20,7 @@ startup {
 
 onStart {
     vars.splitsDone.Clear();
+    vars.Log("--Run Start--");
 }
 
 init
@@ -49,6 +51,9 @@ init
 update {
     int _sceneIndex = vars.Helper.Scenes.Active.Index;
     current.sceneIndex = _sceneIndex == 0 ? old.sceneIndex : _sceneIndex;
+    if (current.transitionState != old.transitionState) {
+        print("tstate: " + current.transitionState);
+    }
 }
 
 start {
@@ -62,7 +67,12 @@ split {
 
     if (current.sceneIndex != old.sceneIndex && current.sceneIndex != 1) {
         string splitName = "split_exit_" + old.sceneIndex;
-        return settings[splitName] && vars.splitsDone.Add(splitName);
+        if (settings[splitName] && vars.splitsDone.Add(splitName)) {
+            vars.Log("Splitting: " + splitName);
+            vars.Log("- current.sceneIndex: " + current.sceneIndex);
+            vars.Log("- old.sceneIndex: " + old.sceneIndex);
+            return true;
+        }
     }
 }
 
@@ -74,4 +84,9 @@ isLoading {
         return current.transitionInterpolator != 1f &&
             current.transitionInterpolator == old.transitionInterpolator;
     }
+}
+
+onReset
+{
+    vars.Log("--Run Reset--");
 }
