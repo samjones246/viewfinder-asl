@@ -51,9 +51,6 @@ init
 update {
     int _sceneIndex = vars.Helper.Scenes.Active.Index;
     current.sceneIndex = _sceneIndex == 0 ? old.sceneIndex : _sceneIndex;
-    if (current.transitionState != old.transitionState) {
-        print("tstate: " + current.transitionState);
-    }
 }
 
 start {
@@ -67,11 +64,16 @@ split {
 
     if (current.sceneIndex != old.sceneIndex && current.sceneIndex != 1) {
         string splitName = "split_exit_" + old.sceneIndex;
+        vars.Log("Split Point: " + splitName);
+        vars.Log("- current.sceneIndex: " + current.sceneIndex);
+        vars.Log("- old.sceneIndex: " + old.sceneIndex);
+        vars.Log("- in splitsDone? " + vars.splitsDone.Contains(splitName));
+        vars.Log("- setting enabled? " + settings[splitName]);
         if (settings[splitName] && vars.splitsDone.Add(splitName)) {
-            vars.Log("Splitting: " + splitName);
-            vars.Log("- current.sceneIndex: " + current.sceneIndex);
-            vars.Log("- old.sceneIndex: " + old.sceneIndex);
+            vars.Log("- Split point enabled and not yet triggered, firing.");
             return true;
+        } else {
+            vars.Log("- Split point disabled or already triggered.");
         }
     }
 }
