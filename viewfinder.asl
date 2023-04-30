@@ -89,7 +89,8 @@ isLoading {
     }
     if (current.transitionState == 3) {
         return current.transitionInterpolator != 1f &&
-            current.transitionInterpolator == old.transitionInterpolator;
+            current.transitionInterpolator == old.transitionInterpolator &&
+            current.gameState != 2;
     }
 }
 
