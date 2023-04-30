@@ -31,11 +31,6 @@ init
             mono["ViewfinderAssembly", "AdditiveSceneManager"]
             .Make<int>("instance", 0x30);
 
-        // DemoEndScreenController._instance.endSlateRoot.gameObject.activeSelf
-        vars.Helper["demoComplete"] =
-            mono["ViewfinderAssembly", "DemoEndScreenController", 1]
-            .Make<bool>("_instance", 0x20, 0x30, 0x39);
-
         vars.Helper["transitionInterpolator"] =
             mono["ViewfinderAssembly", "TransitionImageEffect", 1]
             .Make<float>("_instance", 0x88);
@@ -49,8 +44,18 @@ init
             mono["ViewfinderAssembly", "PersistentGameController", 1]
             .MakeString("_instance", 0x18, 0x80);
 
+        // GameStateManager.instance.gameStates;
+        vars.Helper["gameStates"] =
+            mono["ViewfinderAssembly", "GameStateManager"]
+            .MakeList<ValueTuple<long, long>>("instance", 0x18);
+
         return true;
     });
+}
+
+update
+{
+    current.gameState = current.gameStates[current.gameStates.Count - 1].Item1;
 }
 
 start {
@@ -58,7 +63,7 @@ start {
 }
 
 split {
-    if (current.demoComplete && !old.demoComplete) {
+    if (current.gameState == 3 && old.gameState != 3) {
         vars.Log("Split point: Demo Complete");
         return true;
     }
