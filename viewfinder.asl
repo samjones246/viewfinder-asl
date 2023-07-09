@@ -1,13 +1,4 @@
-state("Viewfinder_Demo", "demo1") {}
-
-state("Viewfinder_Demo", "demo2") {
-    bool isLoading: "GameAssembly.dll", 0x3CA88C8, 0xB8, 0x20;
-    bool isTransition: "GameAssembly.dll", 0x3CA88C8, 0xB8, 0x21;
-    bool isMainMenu: "GameAssembly.dll", 0x3CA88C8, 0xB8, 0x22;
-    int levelID: "GameAssembly.dll", 0x3CA88C8, 0xB8, 0x24;
-    int isRunning: "GameAssembly.dll", 0x3CA88C8, 0xB8, 0x28;
-}
-
+state("Viewfinder_Demo") {}
 startup {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Viewfinder Demo";
@@ -66,6 +57,14 @@ init
             vars.Helper["gameStates"] =
                 mono["ViewfinderAssembly", "GameStateManager"]
                 .MakeList<ValueTuple<long, long>>("instance", 0x18);
+        } else {
+            var data = mono["ViewfinderAssembly", "AutoSplitterData"];
+            vars.Helper["isLoading"] = data.Make<bool>("isLoading");
+            vars.Helper["isTransition"] = data.Make<bool>("isTransition");
+            vars.Helper["isMainMenu"] = data.Make<bool>("isMainMenu");
+            vars.Helper["levelID"] = data.Make<int>("levelID");
+            vars.Helper["isRunning"] = data.Make<int>("isRunning");
+
         }
         return true;
     });
