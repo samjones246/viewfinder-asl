@@ -1,35 +1,34 @@
 state("Viewfinder_Demo") {}
+state("Viewfinder") {}
 startup {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
     vars.Helper.GameName = "Viewfinder Demo";
     vars.Helper.LoadSceneManager = true;
     vars.Helper.StartFileLogger("ViewfinderASL.log");
 
-    settings.Add("split_exit", true, "Split on level end");
-    settings.Add("12", true, "Level 1", "split_exit");
-    settings.Add("8", true, "Level 2", "split_exit");
-    settings.Add("13", true, "Level 3", "split_exit");
-    settings.Add("9", true, "Level 4", "split_exit");
-    settings.Add("6", true, "Level 5", "split_exit");
-    settings.Add("10", true, "Level 6", "split_exit");
-    settings.Add("11", true, "Level 7", "split_exit");
+    settings.Add("split_level", false, "Split on sub-level end");
 
-    vars.splitsDone = new HashSet<int>();
+    settings.Add("split_hub_enter", true, "Split on level end");
+    settings.SetToolTip("split_hub_enter", "When returning to hub after beating all sub-levels in a level");
+    settings.Add("skip_crash", true, "Skip 1:2:3 mid-level exit", "split_hub_enter");
+    settings.SetToolTip("skip_crash", "In Chapter 1 Level 2.3, don't split when returning to hub after the system crash sequence.");
 
-    vars.levelNameMap = new Dictionary<string, string>() {
-        {"1:1.1", "12"},
-        {"1:1.2", "12"},
-        {"1:1.3", "12"},
-        {"1:2.1", "12"},
-        {"1:2.3", "12"},
-        {"1:2.4", "12"},
-        {"3:2.1", "12"},
-    };
+    settings.Add("split_hub_exit", false, "Split on level start");
+    settings.SetToolTip("split_hub_exit", "When entering a level from the hub");
+
+    settings.Add("split_hub_transition", false, "Split on moving to next hub");
+
+    
+
+    vars.splitsDone = new HashSet<string>();
+    vars.hubs = new List<int>() {57, 58, 59, 60, 61};
 }
 
 init
 {
-    if (modules.First().ModuleMemorySize == 675840) {
+    if (modules.First().ModuleName == "Viewfinder.exe") {
+        version = "release";
+    } else if (modules.First().ModuleMemorySize == 675840) {
         version = "demo2";
     } else {
         version = "demo1";
@@ -68,12 +67,17 @@ init
         }
         return true;
     });
+    old.levelID = -1;
 }
 
 update
 {
     if(version == "demo1") {
         current.gameState = current.gameStates[current.gameStates.Count - 1].Item1;
+    } else {
+        if (current.levelID != old.levelID) {
+            vars.Log("level: " + current.levelID);
+        }
     }
 }
 
@@ -85,13 +89,14 @@ start {
     if (version == "demo1") {
         return current.Level == "1:1.1" && current.loadState == 0 && old.loadState == 4;
     } else {
-        return !current.isLoading && old.isLoading && current.levelID == 12;
+        int startLevel = version == "release" ? 31 : 12;
+        return !current.isLoading && old.isLoading && current.levelID == startLevel;
     }
 }
 
 reset
 {
-    if (version == "demo2") {
+    if (version != "demo1") {
         return current.isMainMenu && !old.isMainMenu;
     }   
 }
@@ -103,8 +108,7 @@ split {
         }
 
         if (current.Level != old.Level) {
-            string level = vars.levelNamesMap[old.Level];
-            if (settings[level] && vars.splitsDone.Add(level)) {
+            if (settings["split_level"] && vars.splitsDone.Add(old.Level.ToString())) {
                 return true;
             }
         }
@@ -113,8 +117,19 @@ split {
             return true;
         }
 
-        if (current.levelID != old.levelID) {
-            return settings[old.levelID.ToString()] && vars.splitsDone.Add(old.levelID);
+        if (current.levelID != old.levelID && vars.splitsDone.Add(old.levelID.ToString() + "_" + current.levelID.ToString())) {
+            if (version == "release") {
+                bool hubEnter = vars.hubs.Contains(current.levelID);
+                bool hubExit = vars.hubs.Contains(old.levelID);
+                if (hubEnter && hubExit) {
+                    return settings["split_hub_transition"];
+                } else if (hubEnter && (old.levelID != 81 || !settings["skip_crash"])) {
+                    return settings["split_hub_enter"];
+                } else if (hubExit) {
+                    return settings["split_hub_exit"];
+                }
+            }
+            return settings["split_level"];
         }
     }
 }
