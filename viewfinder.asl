@@ -63,7 +63,8 @@ init
             vars.Helper["isMainMenu"] = data.Make<bool>("isMainMenu");
             vars.Helper["levelID"] = data.Make<int>("levelID");
             vars.Helper["isRunning"] = data.Make<int>("isRunning");
-
+            vars.Helper["trainTransition"] = mono["ViewfinderAssembly", "TrainController", 1]
+                .Make<bool>("_instance", 0x40);
         }
         return true;
     });
@@ -77,6 +78,10 @@ update
     } else {
         if (current.levelID != old.levelID) {
             vars.Log("level: " + current.levelID);
+        }
+
+        if (current.trainTransition != old.trainTransition) {
+            vars.Log("trainTransition:" + current.trainTransition);
         }
     }
 }
@@ -96,7 +101,7 @@ start {
 
 reset
 {
-    if (version != "demo1") {
+    if (version == "demo2") {
         return current.isMainMenu && !old.isMainMenu;
     }   
 }
