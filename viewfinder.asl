@@ -63,12 +63,15 @@ init
             vars.Helper["isMainMenu"] = data.Make<bool>("isMainMenu");
             vars.Helper["levelID"] = data.Make<int>("levelID");
             vars.Helper["isRunning"] = data.Make<int>("isRunning");
-            vars.Helper["trainTransition"] = mono["ViewfinderAssembly", "TrainController", 1]
-                .Make<bool>("_instance", 0x40);
+            vars.Helper["journeyStart"] = mono["ViewfinderAssembly", "TrainController", 1]
+                .MakeString("_instance", 0x50, 0x10, 0x130);
+            vars.Helper["journeyDestination"] = mono["ViewfinderAssembly", "TrainController", 1]
+                .MakeString("_instance", 0x50, 0x18, 0x130);
         }
         return true;
     });
     old.levelID = -1;
+    old.journeyStart = "";
 }
 
 update
@@ -78,10 +81,6 @@ update
     } else {
         if (current.levelID != old.levelID) {
             vars.Log("level: " + current.levelID);
-        }
-
-        if (current.trainTransition != old.trainTransition) {
-            vars.Log("trainTransition:" + current.trainTransition);
         }
     }
 }
@@ -135,6 +134,10 @@ split {
                 }
             }
             return settings["split_level"];
+        }
+
+        if (current.journeyStart != old.journeyStart && vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination)) {
+            return settings["split_hub_transition"];
         }
     }
 }
