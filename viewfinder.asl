@@ -85,6 +85,7 @@ update
 
 onStart {
     vars.splitsDone.Clear();
+    vars.Log("-- RUN START --");
 }
 
 start {
@@ -103,6 +104,11 @@ reset
     }   
 }
 
+onReset
+{
+    vars.Log("-- RUN RESET --");
+}
+
 split {
     if (version == "demo1") {
         if (current.gameState == 3 && old.gameState != 3) {
@@ -116,6 +122,7 @@ split {
         }
     } else {
         if (current.isRunning == 2 && old.isRunning == 1) {
+            vars.Log("Split: Run End");
             return true;
         }
 
@@ -126,24 +133,29 @@ split {
             if (version == "release") {
                 bool hubEnter = vars.hubs.Contains(current.levelID);
                 bool hubExit = vars.hubs.Contains(old.levelID);
-                if (hubEnter && hubExit && settings["split_hub_transition"]) {
-                    return true;
+                if (hubEnter && hubExit) {
+                    // Do nothing. TODO: Add a setting for this after the patch comes out.
                 } else if (hubEnter && old.levelID != 81 && settings["split_hub_enter"]) {
+                    vars.Log("Split: Level End");
                     return true;
                 } else if (hubExit && settings["split_hub_exit"]) {
+                    vars.Log("Split: Level Enter");
                     return true;
                 }
             }
             if (settings["split_level"]) {
+                vars.Log("Split: Sub-level End");
                 return true;
             }
         }
 
         if (
             current.journeyStart != old.journeyStart && 
-            vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination)
+            vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination) &&
+            settings["split_hub_transition"]
         ) {
-            return settings["split_hub_transition"];
+            vars.Log("Split: Hub Transition");
+            return true;
         }
     }
 }
