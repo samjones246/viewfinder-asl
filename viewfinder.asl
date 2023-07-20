@@ -80,6 +80,12 @@ update
         if (current.levelID != old.levelID) {
             vars.Log("level: " + current.levelID);
         }
+        if (current.isLoading != old.isLoading) {
+            vars.Log("isLoading: " + current.isLoading);
+        }
+        if (current.isTransition != old.isTransition) {
+            vars.Log("isTransition: " + current.isTransition);
+        }
     }
 }
 
