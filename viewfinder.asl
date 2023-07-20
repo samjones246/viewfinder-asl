@@ -80,14 +80,17 @@ split {
         bool hubExit = vars.hubs.Contains(old.levelID);
         if (hubEnter && hubExit) {
             // Do nothing. TODO: Add a setting for this after the patch comes out.
-        } else if (hubEnter && old.levelID != 81 && settings["split_hub_enter"]) {
-            vars.Log("Split: Level End");
-            return true;
-        } else if (hubExit && settings["split_hub_exit"]) {
-            vars.Log("Split: Level Enter");
-            return true;
-        }
-        if (settings["split_level"]) {
+        } else if (hubEnter) {
+            if (old.levelID != 81 && settings["split_hub_enter"]) {
+                vars.Log("Split: Level End");
+                return true;
+            }
+        } else if (hubExit) {
+            if (settings["split_hub_exit"]) {
+                vars.Log("Split: Level Enter");
+                return true;
+            }
+        } else if (settings["split_level"]) {
             vars.Log("Split: Sub-level End");
             return true;
         }
