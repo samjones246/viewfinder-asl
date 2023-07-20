@@ -1,7 +1,7 @@
 state("Viewfinder") {}
 startup {
     Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
-    vars.Helper.GameName = "Viewfinder Demo";
+    vars.Helper.GameName = "Viewfinder";
     vars.Helper.LoadSceneManager = true;
     vars.Helper.StartFileLogger("ViewfinderASL.log");
 
@@ -109,16 +109,5 @@ split {
 }
 
 isLoading {
-    if (version == "demo1") {
-        if (current.transitionState == 2) {
-            return true;
-        }
-        if (current.transitionState == 3) {
-            return current.transitionInterpolator != 1f &&
-                current.transitionInterpolator == old.transitionInterpolator &&
-                current.gameState != 2;
-        }
-    } else {
-        return current.isTransition && current.isLoading;
-    }
+    return current.isTransition && current.isLoading;
 }
