@@ -10,8 +10,6 @@ startup {
 
     settings.Add("split_hub_enter", true, "Split on level end");
     settings.SetToolTip("split_hub_enter", "When returning to hub after beating all sub-levels in a level");
-    settings.Add("skip_crash", true, "Skip 1:2:3 mid-level exit", "split_hub_enter");
-    settings.SetToolTip("skip_crash", "In Chapter 1 Level 2.3, don't split when returning to hub after the system crash sequence.");
 
     settings.Add("split_hub_exit", false, "Split on level start");
     settings.SetToolTip("split_hub_exit", "When entering a level from the hub");
@@ -121,22 +119,30 @@ split {
             return true;
         }
 
-        if (current.levelID != old.levelID && vars.splitsDone.Add(old.levelID.ToString() + "_" + current.levelID.ToString())) {
+        if (
+            current.levelID != old.levelID &&
+            vars.splitsDone.Add(old.levelID.ToString() + "_" + current.levelID.ToString())
+        ) {
             if (version == "release") {
                 bool hubEnter = vars.hubs.Contains(current.levelID);
                 bool hubExit = vars.hubs.Contains(old.levelID);
-                if (hubEnter && hubExit) {
-                    return settings["split_hub_transition"];
-                } else if (hubEnter && (old.levelID != 81 || !settings["skip_crash"])) {
-                    return settings["split_hub_enter"];
-                } else if (hubExit) {
-                    return settings["split_hub_exit"];
+                if (hubEnter && hubExit && settings["split_hub_transition"]) {
+                    return true;
+                } else if (hubEnter && old.levelID != 81 && settings["split_hub_enter"]) {
+                    return true;
+                } else if (hubExit && settings["split_hub_exit"]) {
+                    return true;
                 }
             }
-            return settings["split_level"];
+            if (settings["split_level"]) {
+                return true;
+            }
         }
 
-        if (current.journeyStart != old.journeyStart && vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination)) {
+        if (
+            current.journeyStart != old.journeyStart && 
+            vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination)
+        ) {
             return settings["split_hub_transition"];
         }
     }
