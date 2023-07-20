@@ -15,6 +15,9 @@ startup {
 
     settings.Add("split_hub_transition", false, "Split on moving to next hub");
 
+    settings.Add("experimental", false, "Experimental");
+    settings.Add("exp_loads", false, "Improved load removal", "experimental");
+
     vars.splitsDone = new HashSet<string>();
     vars.hubs = new List<int>() {57, 58, 59, 60, 61};
 }
@@ -109,5 +112,10 @@ split {
 }
 
 isLoading {
-    return current.isTransition && current.isLoading;
+    if (settings["exp_loads"]) {
+        bool inHub = vars.hubs.Contains(current.levelID) || current.levelID == 81;
+        return current.isLoading && (inHub || current.isTransition);
+    } else {
+        return current.isTransition && current.isLoading;
+    }
 }
