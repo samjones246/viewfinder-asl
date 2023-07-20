@@ -90,7 +90,9 @@ split {
                 vars.Log("Split: Level Enter");
                 return true;
             }
-        } else if (settings["split_level"]) {
+        }
+        
+        if (!hubExit && settings["split_level"]) {
             vars.Log("Split: Sub-level End");
             return true;
         }
