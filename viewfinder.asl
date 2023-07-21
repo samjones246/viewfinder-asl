@@ -103,6 +103,7 @@ split {
 
     if (
         current.journeyStart != old.journeyStart && 
+        current.journeyDestination != "Aharon" &&
         vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination) &&
         settings["split_hub_transition"]
     ) {
