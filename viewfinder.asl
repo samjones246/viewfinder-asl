@@ -24,15 +24,10 @@ init
     vars.Helper.TryLoad = (Func<dynamic, bool>)(mono => {
         var data = mono["ViewfinderAssembly", "AutoSplitterData"];
         vars.Helper["isLoading"] = data.Make<bool>("isLoading");
-        vars.Helper["isTransition"] = data.Make<bool>("isTransition");
         vars.Helper["isMainMenu"] = data.Make<bool>("isMainMenu");
         vars.Helper["levelID"] = data.Make<int>("levelID");
         vars.Helper["isRunning"] = data.Make<int>("isRunning");
-
-        vars.Helper["journeyStart"] = mono["ViewfinderAssembly", "TrainController", 1]
-            .MakeString("_instance", 0x50, 0x10, 0x130);
-        vars.Helper["journeyDestination"] = mono["ViewfinderAssembly", "TrainController", 1]
-            .MakeString("_instance", 0x50, 0x18, 0x130);
+        vars.Helper["isRidingTrain"] = data.Make<bool>("isRidingTrain");
         return true;
     });
     old.levelID = -1;
@@ -46,9 +41,6 @@ update
     }
     if (current.isLoading != old.isLoading) {
         vars.Log("isLoading: " + current.isLoading);
-    }
-    if (current.isTransition != old.isTransition) {
-        vars.Log("isTransition: " + current.isTransition);
     }
 }
 
@@ -99,9 +91,8 @@ split {
     }
 
     if (
-        current.journeyStart != old.journeyStart && 
-        current.journeyDestination != "Aharon" &&
-        vars.splitsDone.Add(current.journeyStart + "_" + current.journeyDestination) &&
+        current.isRidingTrain && !old.isRidingTrain && 
+        vars.splitsDone.Add(current.levelID + "train") &&
         settings["split_hub_transition"]
     ) {
         vars.Log("Split: Hub Transition");
@@ -110,6 +101,5 @@ split {
 }
 
 isLoading {
-    bool inHub = vars.hubs.Contains(current.levelID) || current.levelID == 81;
-    return current.isLoading && (inHub || current.isTransition);
+    return current.isLoading;
 }
