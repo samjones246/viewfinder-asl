@@ -16,7 +16,7 @@ startup {
     settings.Add("split_hub_transition", false, "Split on moving to next hub");
 
     vars.splitsDone = new HashSet<string>();
-    vars.hubs = new List<int>() {57, 58, 59, 60, 61};
+    vars.hubs = new List<int>() {57, 58, 59, 60, 61, 62};
 }
 
 init
