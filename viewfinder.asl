@@ -15,6 +15,8 @@ startup {
 
     settings.Add("split_hub_transition", false, "Split on moving to next hub");
 
+    settings.Add("il_mode", false, "Individual Level Mode");
+
     vars.splitsDone = new HashSet<string>();
     vars.hubs = new List<int>() {57, 58, 59, 60, 61, 62};
 }
@@ -28,16 +30,20 @@ init
         vars.Helper["levelID"] = data.Make<int>("levelID");
         vars.Helper["isRunning"] = data.Make<int>("isRunning");
         vars.Helper["isRidingTrain"] = data.Make<bool>("isRidingTrain");
+        vars.Helper["inLevelTime"] = data.Make<double>("inLevelTime");
         return true;
     });
     old.levelID = -1;
     old.journeyStart = "";
+    vars.prevLevel = -1;
 }
 
 update
 {
     if (current.levelID != old.levelID) {
+        vars.prevLevel = old.levelID;
         vars.Log("levelID: " + current.levelID);
+        vars.Log("prevLevel: " + vars.prevLevel);
     }
     if (current.isLoading != old.isLoading) {
         vars.Log("isLoading: " + current.isLoading);
@@ -50,7 +56,15 @@ onStart {
 }
 
 start {
-    return !current.isLoading && old.isLoading && current.levelID == 31;
+    if (!current.isLoading && old.isLoading) {
+        if (settings["il_mode"]) {
+            return vars.hubs.Contains(vars.prevLevel) && !vars.hubs.Contains(current.levelID);
+        } else {
+            return current.levelID == 31;
+        }
+    }
+    return !current.isLoading && old.isLoading && 
+        (current.levelID == 31 || settings["il_start"]);
 }
 
 onReset
