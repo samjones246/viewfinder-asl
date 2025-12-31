@@ -1,9 +1,5 @@
-state("Viewfinder") {
-    bool isLoading : "GameAssembly.dll", 0x3D12B60, 0xB8, 0x20;
-    bool isRidingTrain : "GameAssembly.dll", 0x3D12B60, 0xB8, 0x22;
-    int levelID : "GameAssembly.dll", 0x3D12B60, 0xB8, 0x24;
-    int isRunning : "GameAssembly.dll", 0x3D12B60, 0xB8, 0x2C;
-}
+state("Viewfinder") {}
+
 startup {
     settings.Add("split_level", false, "Split on sub-level end");
 
@@ -23,6 +19,23 @@ startup {
 
 init
 {
+    var module = modules.First(m => m.ModuleName == "GameAssembly.dll");
+    var scanner = new SignatureScanner(game, module.BaseAddress, module.ModuleMemorySize);
+    var target = new SigScanTarget(3, "48 8B 05 ?? ?? ?? ?? 48 8B 88 B8000000 F2 0F 11 41 18") {
+        OnFound = (p, s, ptr) => ptr + 0x4 + game.ReadValue<int>(ptr)
+    };
+    var baseAddr = scanner.Scan(target);
+    print(baseAddr.ToString("X"));
+    vars.Watchers = new MemoryWatcherList
+    {
+        new MemoryWatcher<bool>(new DeepPointer(baseAddr, 0xB8, 0x20)) { Name = "isLoading" },
+        new MemoryWatcher<bool>(new DeepPointer(baseAddr, 0xB8, 0x22)) { Name = "isRidingTrain" },
+        new MemoryWatcher<int>(new DeepPointer(baseAddr, 0xB8, 0x24)) { Name = "levelID" },
+        new MemoryWatcher<int>(new DeepPointer(baseAddr, 0xB8, 0x2C)) { Name = "isRunning" },
+    };
+
+    vars.Watchers.UpdateAll(game);
+
     old.levelID = -1;
     old.journeyStart = "";
     vars.prevLevel = -1;
@@ -30,6 +43,12 @@ init
 
 update
 {
+    vars.Watchers.UpdateAll(game);
+    current.isLoading = vars.Watchers["isLoading"].Current;
+    current.isRidingTrain = vars.Watchers["isRidingTrain"].Current;
+    current.levelID = vars.Watchers["levelID"].Current;
+    current.isRunning = vars.Watchers["isRunning"].Current;
+
     if (current.levelID != old.levelID) {
         vars.prevLevel = old.levelID;
         print("levelID: " + current.levelID);
