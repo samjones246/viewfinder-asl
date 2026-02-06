@@ -37,7 +37,6 @@ init
     vars.Watchers.UpdateAll(game);
 
     old.levelID = -1;
-    old.journeyStart = "";
     vars.prevLevel = -1;
 }
 
@@ -72,8 +71,6 @@ start {
             return current.levelID == 31;
         }
     }
-    return !current.isLoading && old.isLoading && 
-        (current.levelID == 31 || settings["il_start"]);
 }
 
 onReset
